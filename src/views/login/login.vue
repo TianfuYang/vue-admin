@@ -6,25 +6,34 @@
           <li :class="{'current':item.current}" v-for="item in menuTab" :key='item.id' @click="toggleMenu(item)" > {{item.txt}}</li>
         </ul>
       <!--表单的开始-->
-        <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm"  class="demo-ruleForm" size='medium'>
+        <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" class ='login-form'  size='medium'>
           
-          <el-form-item  prop="pass">
-            <label>密码</label>
-            <el-input type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
+          <el-form-item  prop="username" class = 'item_form'>
+            <label>邮箱</label>
+            <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
           </el-form-item>
            
-          <el-form-item  prop="checkPass">
-            <label>确认密码</label>
-            <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
+          <el-form-item  prop="password"  class = 'item_form'>
+            <label >密码</label>
+            <el-input type="text" v-model="ruleForm.password" autocomplete="off" minlength='5' maxlength="20" show-word-limit></el-input>
+            
           </el-form-item>
-           
-          <el-form-item  prop="age">
+          <el-form-item  prop="code"  class = 'item_form'>
+            <label>验证码</label>
+
+            <el-row :gutter="20">
+              <el-col :span="15"><el-input v-model.number="ruleForm.code"></el-input></el-col>
+             
+              <el-col :span="9" ><el-button type = 'success' class='block'>获取验证码</el-button>  </el-col>
+            </el-row>
+          </el-form-item>
+          <!-- <el-form-item  prop="age"  class = 'item_form'>
             <label>年龄</label>
             <el-input v-model.number="ruleForm.age"></el-input>
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item>
-            <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
-            <el-button @click="resetForm('ruleForm')">重置</el-button>
+            <el-button type="danger" @click="submitForm('ruleForm')" class='login-bnt block'>提交</el-button>
+            
           </el-form-item>
         </el-form>
         
@@ -43,25 +52,15 @@
 export default {
   name: "login",
   data() {
-     var checkAge = (rule, value, callback) => {
-        if (!value) {
-          return callback(new Error('年龄不能为空'));
-        }
-        setTimeout(() => {
-          if (!Number.isInteger(value)) {
-            callback(new Error('请输入数字值'));
-          } else {
-            if (value < 18) {
-              callback(new Error('必须年满18岁'));
-            } else {
-              callback();
-            }
-          }
-        }, 1000);
-      };
+     
+      //验证用户名
       var validatePass = (rule, value, callback) => {
+        let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+
         if (value === '') {
-          callback(new Error('请输入密码'));
+          callback(new Error('请输入邮箱'));
+        } else if(!reg.test(value)){
+          callback(new Error('请输入正确的邮箱地址'));
         } else {
           if (this.ruleForm.checkPass !== '') {
             this.$refs.ruleForm.validateField('checkPass');
@@ -69,14 +68,38 @@ export default {
           callback();
         }
       };
-      var validatePass2 = (rule, value, callback) => {
+      var validatePassword = (rule, value, callback) => {
+        let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
         if (value === '') {
-          callback(new Error('请再次输入密码'));
+          callback(new Error('请输入密码'));
+        } else if (!reg.test(value)){
+          callback(new Error('请输入正确格式密码'));
+        }
+         else {
+          callback();
+        }
+      };
+       var validatePassword2 = (rule, value, callback) => {
+        let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
+        if (value === '') {
+          callback(new Error('请输入密码'));
         } else if (value !== this.ruleForm.pass) {
           callback(new Error('两次输入密码不一致!'));
         } else {
           callback();
         }
+      };
+      //验证码
+      var checkpass = (rule, value, callback) => {
+        let reg = /^[a-z0-9]{6}$/
+        if (!value) {
+          return callback(new Error('验证码不能为空'));
+        }else if (!reg.test(value)) {
+          callback(new Error('请输入正确的验证码'));
+        } else {
+            callback();
+          }
+      
       };
       return {
         menuTab:[
@@ -86,19 +109,19 @@ export default {
       
         //表达的数据
         ruleForm: {
-          pass: '',
-          checkPass: '',
-          age: ''
+          username: '',
+          password: '',
+          code: ''
         },
         rules: {
-          pass: [
+          username: [
             { validator: validatePass, trigger: 'blur' }
           ],
-          checkPass: [
-            { validator: validatePass2, trigger: 'blur' }
+          password: [
+            { validator: validatePassword, trigger: 'blur' }
           ],
-          age: [
-            { validator: checkAge, trigger: 'blur' }
+          code: [
+            { validator: checkpass, trigger: 'blur' }
           ]
         }
       };
@@ -126,9 +149,6 @@ export default {
           }
         });
       },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
-      }
     }
 }
 </script>
@@ -156,5 +176,25 @@ export default {
     .current{
       background-color: rgba($color: #000000, $alpha: 1.0)
     }
+   }
+  .login-form{
+    margin-top: 29px;
+    label{
+      display: block;
+      margin-bottom: 2px;
+      font-size: 14px;
+      color:#ffffff
+    }
+    .item_form{
+      margin-bottom: 3px;
+    }
+    .block{
+      display: block;
+      width: 100%;
+    }
+    .login-bnt{
+      margin-top: 15px;
+    }
   }
+ 
 </style>
