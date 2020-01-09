@@ -16,8 +16,13 @@
           <el-form-item  prop="password"  class = 'item_form'>
             <label >密码</label>
             <el-input type="text" v-model="ruleForm.password" autocomplete="off" minlength='5' maxlength="20" show-word-limit></el-input>
-            
           </el-form-item>
+
+          <el-form-item  prop="password2"  class = 'item_form' v-if="model ==='register' ">
+            <label >重复密码</label>
+            <el-input type="text" v-model="ruleForm.password2"  autocomplete="off" minlength='5' maxlength="20" show-word-limit></el-input>
+          </el-form-item>
+
           <el-form-item  prop="code"  class = 'item_form'>
             <label>验证码</label>
 
@@ -48,13 +53,14 @@
 
 <script>
 // @ is an alias to /src
-
+import {stripscript} from '@/utils/validate'
 export default {
   name: "login",
   data() {
      
       //验证用户名
       var validatePass = (rule, value, callback) => {
+
         let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
 
         if (value === '') {
@@ -68,7 +74,10 @@ export default {
           callback();
         }
       };
+      // 验证密码
       var validatePassword = (rule, value, callback) => {
+        this.ruleForm.password = stripscript(value)
+        value = this.ruleForm.password
         let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
         if (value === '') {
           callback(new Error('请输入密码'));
@@ -79,11 +88,14 @@ export default {
           callback();
         }
       };
+      // 验证重复密码
        var validatePassword2 = (rule, value, callback) => {
+        this.ruleForm.password2 = stripscript(value)
+        value = this.ruleForm.password2
         let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
         if (value === '') {
           callback(new Error('请输入密码'));
-        } else if (value !== this.ruleForm.pass) {
+        } else if (value !== this.ruleForm.password) {
           callback(new Error('两次输入密码不一致!'));
         } else {
           callback();
@@ -91,6 +103,8 @@ export default {
       };
       //验证码
       var checkpass = (rule, value, callback) => {
+        this.ruleForm.code = stripscript(value)
+        value = this.ruleForm.code
         let reg = /^[a-z0-9]{6}$/
         if (!value) {
           return callback(new Error('验证码不能为空'));
@@ -103,14 +117,16 @@ export default {
       };
       return {
         menuTab:[
-          {txt:'登陆',current:true},
-          {txt:'注册',current:false},
+          {txt:'登陆',current:true,type:'login'},
+          {txt:'注册',current:false,type:'register'},
         ],
-      
+        //模块值
+        model: 'login',
         //表达的数据
         ruleForm: {
           username: '',
           password: '',
+          password2: '',
           code: ''
         },
         rules: {
@@ -119,6 +135,9 @@ export default {
           ],
           password: [
             { validator: validatePassword, trigger: 'blur' }
+          ],
+          password2: [
+            { validator: validatePassword2, trigger: 'blur' }
           ],
           code: [
             { validator: checkpass, trigger: 'blur' }
@@ -137,7 +156,9 @@ export default {
           element.current = false
         });
         console.log(data)
+        //高光
         data.current = true
+        this.model = data.type
       },
       submitForm(formName) {
         this.$refs[formName].validate((valid) => {
