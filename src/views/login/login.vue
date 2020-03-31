@@ -15,7 +15,7 @@
            
           <el-form-item  prop="password"  class = 'item_form'>
             <label >密码</label>
-            <el-input type="text" v-model="ruleForm.password" autocomplete="off" minlength='5' maxlength="20" show-word-limit></el-input>
+            <el-input type="text" v-model="ruleForm.password" autocomplete="off"  ></el-input>
           </el-form-item>
 
           <el-form-item  prop="password2"  class = 'item_form' v-if="model ==='register' ">
@@ -53,19 +53,16 @@
 
 <script>
 // @ is an alias to /src
-import {stripscript} from '@/utils/validate'
+import {stripscript,validateEmail,validatePass1,validatCode} from '@/utils/validate'
 export default {
   name: "login",
   data() {
      
       //验证用户名
       var validatePass = (rule, value, callback) => {
-
-        let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
-
         if (value === '') {
           callback(new Error('请输入邮箱'));
-        } else if(!reg.test(value)){
+        } else if(validateEmail(value)){
           callback(new Error('请输入正确的邮箱地址'));
         } else {
           if (this.ruleForm.checkPass !== '') {
@@ -73,18 +70,20 @@ export default {
           }
           callback();
         }
-      };
+      }; 
       // 验证密码
       var validatePassword = (rule, value, callback) => {
         this.ruleForm.password = stripscript(value)
+        console.log(this.ruleForm.password)
         value = this.ruleForm.password
-        let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
         if (value === '') {
           callback(new Error('请输入密码'));
-        } else if (!reg.test(value)){
-          callback(new Error('请输入正确格式密码'));
-        }
-         else {
+        } else if(validatePass1(value)){
+          callback(new Error('请输入正确的密码'));
+        }else {
+          if (this.ruleForm.checkPass !== '') {
+            this.$refs.ruleForm.validateField('checkPass');
+          }
           callback();
         }
       };
@@ -92,11 +91,10 @@ export default {
        var validatePassword2 = (rule, value, callback) => {
         this.ruleForm.password2 = stripscript(value)
         value = this.ruleForm.password2
-        let reg = /^(?!\D+$)(?![^a-zA-Z]+$)\S{6,20}$/
         if (value === '') {
-          callback(new Error('请输入密码'));
+          callback(new Error('请再次输入密码'));
         } else if (value !== this.ruleForm.password) {
-          callback(new Error('两次输入密码不一致!'));
+          callback(new Error('两次输入密码不一样!'));
         } else {
           callback();
         }
@@ -105,10 +103,10 @@ export default {
       var checkpass = (rule, value, callback) => {
         this.ruleForm.code = stripscript(value)
         value = this.ruleForm.code
-        let reg = /^[a-z0-9]{6}$/
+        
         if (!value) {
           return callback(new Error('验证码不能为空'));
-        }else if (!reg.test(value)) {
+        }else if (validatCode(value)) {
           callback(new Error('请输入正确的验证码'));
         } else {
             callback();
