@@ -8,28 +8,28 @@
       <!--表单的开始-->
         <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" class ='login-form'  size='medium'>
           
-          <el-form-item   prop="username" class = 'item_form'>
-            <label for='username'>邮箱</label>
-            <el-input id='username' type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
+          <el-form-item  prop="username" class = 'item_form'>
+            <label>邮箱</label>
+            <el-input type="text" v-model="ruleForm.username" autocomplete="off"></el-input>
           </el-form-item>
            
           <el-form-item  prop="password"  class = 'item_form'>
-            <label for='password'>密码</label>
-            <el-input id='password' type="text" v-model="ruleForm.password" autocomplete="off"  ></el-input>
+            <label >密码</label>
+            <el-input type="text" v-model="ruleForm.password" autocomplete="off"  ></el-input>
           </el-form-item>
 
           <el-form-item  prop="password2"  class = 'item_form' v-if="model ==='register' ">
-            <label for='password2'>重复密码</label>
-            <el-input id='password2' type="text" v-model="ruleForm.password2"  autocomplete="off" minlength='5' maxlength="20" show-word-limit></el-input>
+            <label >重复密码</label>
+            <el-input type="text" v-model="ruleForm.password2"  autocomplete="off" minlength='5' maxlength="20" show-word-limit></el-input>
           </el-form-item>
 
           <el-form-item  prop="code"  class = 'item_form'>
-            <label for='code' >验证码</label>
+            <label>验证码</label>
 
             <el-row :gutter="20">
-              <el-col :span="15"><el-input id='code' v-model.number="ruleForm.code"></el-input></el-col>
+              <el-col :span="15"><el-input v-model.number="ruleForm.code"></el-input></el-col>
              
-              <el-col :span="9" ><el-button type = 'success' class='block' @click="getsms">获取验证码</el-button>  </el-col>
+              <el-col :span="9" ><el-button type = 'success' class='block'>获取验证码</el-button>  </el-col>
             </el-row>
           </el-form-item>
           <!-- <el-form-item  prop="age"  class = 'item_form'>
@@ -37,7 +37,7 @@
             <el-input v-model.number="ruleForm.age"></el-input>
           </el-form-item> -->
           <el-form-item>
-            <el-button type="danger" @click="submitForm('ruleForm')" class='login-bnt block' :disabled='loginButtonState' > {{model==='login'?'登陆':'注册'}}</el-button>
+            <el-button type="danger" @click="submitForm('ruleForm')" class='login-bnt block'>提交</el-button>
             
           </el-form-item>
         </el-form>
@@ -53,12 +53,11 @@
 
 <script>
 // @ is an alias to /src
-import {GetSms,Register} from '@/api/login'
 import {reactive, ref,isRef,toRefs,onMounted} from '@vue/composition-api'
 import {stripscript,validateEmail,validatePass1,validatCode} from '@/utils/validate'
 export default {
   name: "login",
-  setup(props,{refs,root,emit}){
+  setup(props,context){
       /**
      * 声明数据
      */
@@ -147,48 +146,19 @@ export default {
       //声明模块值 ref用于一般数据类型  reactive 用于数组 对象
     const model = ref('login');
 
-    const loginButtonState = ref(true)
-
     /**
-     * 3.0函数部分
+     * 声明函数
      */
-    const getsms =(()=>{
-      if(ruleForm.username ===''){
-        root.$message.error('请输入邮箱');
-        return false
-      }
-      if(validateEmail(ruleForm.username)){
-        root.$message.error('邮箱格式有误，请重新输入')
-      }  
-      let requestData={
-        username:ruleForm.username,
-        module:model.value
-      }
-      GetSms(requestData).then(response=>{
-         root.$message({
-          message: '验证码获取成功',
-          type: 'success'
-        });
-        console.log(response.data)
-      }).catch(error=>{
-        root.$message({
-          message: '验证码获取失败',
-          type: 'warning'
-          });
-        console.log(error)
-      })
-    })
 
     const handleChange=(value=>{
       console.log(value)
     }) ;
-    //切换登陆和注册状态
+    
     const toggleMenu = (data=>{
       menuTab.forEach(element => {
         element.current = false
       });
       console.log(data)
-      refs.ruleForm.resetFields()
       //高光
       data.current = true
       model.value = data.type
@@ -197,17 +167,6 @@ export default {
     const submitForm=(formName=>{
       context.refs[formName].validate((valid) => {
         if (valid) {
-          let data={
-            username: ruleForm.username,
-            password: ruleForm.password,
-            code: ruleForm.code,
-            module:'register'
-          }
-          Register(data).then(response=>{
-            console.log(response)
-          }).catch(error=>{
-            console.log(error)
-          })
           alert('submit!');
         } else {
           console.log('error submit!!');
@@ -215,21 +174,18 @@ export default {
         }
       });
     });
-    //生命周期  挂载完成后
+    //生命周期
     onMounted(()=>{
-     
+
     })
     return{
       menuTab,
       model,
-      loginButtonState,
       rules,
       ruleForm,
       handleChange,
       toggleMenu,
-      submitForm,
-      getsms,
-      
+      submitForm
 
 
     }
